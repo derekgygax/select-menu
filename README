@@ -1,0 +1,13 @@
+This repository is to show the SelectMenus class that was added to loc.gov
+
+It does not have an functionality on its own other than to display code.
+
+select_menus.js contains the calss SelectMenus
+
+The other HTML and JS files show when and how the class is used
+
+This class was used to greatly condense the amount of code originally in the other JS files. Originally there was a lot of repition in the code. This class was used to refactor the code and condense everything down.
+
+You can see the code being used in practice by visiting
+	https://www.loc.gov/newspapers/?searchType=advanced&location_country=united+states
+	The State/Province, County, City, and Newspaper menus are using the code

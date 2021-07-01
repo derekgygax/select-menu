@@ -1,0 +1,122 @@
+{% load filters %}
+
+{% once "html/advanced-search/multiselect" %}
+<style>{% include "html/advanced-search/multiselect.css" %}</style>
+{% endonce %}
+
+{% with facets_label|get_dict_value:facet|get_dict_value:"label" as facet_label %}
+<div class="advanced-search-form-cell advanced-search-form-{{ facet }} advanced-search-form-multiselect">
+    <label id="{{ facet }}-search-label"
+        for="checkbox-dropdown-{{ facet }}-button">
+        {% if site_type and site_type == "newspapers" and facet == "partof_title" %}
+            Newspaper
+        {% else %}
+            {% if site_type %}
+                {% if "collections" == site_type %}
+                    {% if "newspaper" in original_formats %}
+                        {{ facet_label|default_if_none:facet|title }}
+                    {% endif %}
+                {% else %}
+                    {{ facet_label|default_if_none:facet|title }}
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </label>
+    <a class="multiple-checkbox-button button-tertiary loc-dropdown-button
+            {% if form_facets|get_dict_value:facet|length == 0 %}
+                disabled
+            {% endif %}
+            advanced-search-select"
+        data-name="{{ facet }}"
+        role="button"
+        id="checkbox-dropdown-{{ facet }}-button"
+        href="#checkbox-dropdown-{{ facet }}"
+        aria-controls="checkbox-dropdown-{{ facet }}"
+        aria-labelledby="{{ facet }}-search-label"
+        aria-expanded="false"
+        {% if form_facets|get_dict_value:facet|length == 0 %}
+        tabindex="-1"
+        aria-disabled="true"
+        {% endif %}
+        >
+      <span class="button-title"
+            aria-live="assertive"
+            role="alertdialog">
+      {% if site_type and "collections" == site_type %}
+          {% if "newspaper" in original_formats %}
+              Select {{ facet_label|default_if_none:facet|title|plural }}
+          {% else %}
+              Select {{ facet_label|default_if_none:facet|title }}
+          {% endif %}
+      {% else %}
+          Select {{ facet_label|default_if_none:facet|title|plural }}
+      {% endif %}
+      </span>
+      <span class="selected-values"
+            aria-hidden="true"
+            aria-live="assertive"
+            role="alertdialog"></span>
+    </a>
+    <fieldset class="multiple-checkbox-wrapper loc-dropdown"
+        id="checkbox-dropdown-{{ facet }}"
+        data-name="{{ facet }}"
+        aria-labelledby="checkbox-dropdown-{{ facet }}-button"
+        aria-live="assertive"
+        tabindex="-1">
+        <legend>
+        {% if site_type and "collections" == site_type %}
+            {{ facet_label|default_if_none:facet|title }}:
+        {% else %}
+            {{ facet_label|default_if_none:facet|title|plural }}:
+        {% endif %}
+        </legend>
+        <ul class="multiple-checkbox">
+            <li class="multiple-checkbox-all
+            {% if facet in options.request_params and "SelectAll" in options.request_params|get_dict_value:facet %}
+            checked
+            {% endif %}">
+            <label for="{{ facet }}-checkbox-all"><input
+                id="{{ facet }}-checkbox-all"
+                type="checkbox"
+                name="{{ facet }}"
+                value="Select All"
+                {% if facet in options.request_params and "SelectAll" in options.request_params|get_dict_value:facet %}
+                checked="checked"
+                {% endif %}> Select All</label>
+            </li>
+            {% for facet_filter in form_facets|get_dict_value:facet %}
+            {% with forloop.counter|stringformat:"04d" as facet_id_number %}
+            {% with facet|get_facet_inverse as facet_inverse %}
+            <li class="multiple-checkbox-item
+                {% if facet in options.request_params and "SelectAll" in options.request_params|get_dict_value:facet %}
+                checked
+                {% elif facet_filter.value in trail_for_facet %}
+                checked
+                {% elif facet_inverse in options.request_params and facet_filter.value not in facet_trail_dict|get_dict_value:facet_inverse|list_values:"value" %}
+                checked
+                {% elif facet_inverse in options.request_params.fa and facet_filter.value not in facet_trail_dict|get_dict_value:facet_inverse|list_values:"value" %}
+                checked
+                {% endif %}">
+                <label for="{{ facet }}-checkbox-{{ facet_id_number }}">
+                    <input id="{{ facet }}-checkbox-{{ facet_id_number }}"
+                        type="checkbox"
+                        name="{{ facet }}"
+                        value="{{ facet_filter.value }}"
+                        {% if facet in options.request_params and "SelectAll" in options.request_params|get_dict_value:facet %}
+                        checked="checked"
+                        {% elif facet_filter.value in trail_for_facet %}
+                        checked="checked"
+                        {% elif facet_inverse in options.request_params and facet_filter.value not in facet_trail_dict|get_dict_value:facet_inverse|list_values:"value" %}
+                        checked="checked"
+                        {% elif facet_inverse in options.request_params.fa and facet_filter.value not in facet_trail_dict|get_dict_value:facet_inverse|list_values:"value" %}
+                        checked="checked"
+                        {% endif %}
+                    > {{ facet_filter.label }}</label>
+            </li>
+            {% endwith %}
+            {% endwith %}
+            {% endfor %}
+        </ul>
+    </fieldset>
+</div>
+{% endwith %}

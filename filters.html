@@ -1,0 +1,46 @@
+{% load filters %}
+
+
+{% once "html/search/filters" %}
+<style>{% include "html/search/filters.css" %}</style>
+<script>{% include "html/advanced-search/select_menus.js" %}</script>
+<script>{% include "html/search/filters.js" %}</script>
+{% endonce %}
+
+<div class="filters">
+    <form
+        class="filters-form"
+        action="{{ options.path_info }}" 
+        method="post">
+        <h2>Filter By:</h2>
+        <input type="hidden" name="searchType" value="advanced">
+        <input type="hidden" name="st" value="{{ options.style }}">
+        <input type="hidden" name="c"
+            {% if options.count %}
+            value="{{ options.count }}"
+            {% endif %}>
+        {% if options.sortBy %}
+            <input type='hidden'
+                name='sb'
+                value='{{options.sortBy}}'/>
+        {% endif %}
+
+        {% with content.facet_trail|listdicts_to_dictlists:"field" as facet_trail_dict %}
+            {% for form_facet in options.form_facets %}
+                {% with options.form_facets|listdicts_to_dict:"field" as facets_label %}
+                {% with form_facet.field as facet and form_facet.required as required %}
+                {% with facet_trail_dict|get_first_value:facet|to_list:" OR " as trail_for_facet %}
+                {% with content.form_facets as form_facets %}
+                {% include "html/advanced-search/multiselect.html" %}
+                {% endwith %}
+                {% endwith %}
+                {% endwith %}
+                {% endwith %}
+            {% endfor %}
+        {% endwith %}
+        <div class="filter-form-actions">
+            <a href="{{clear_link}}">Clear Filters</a>
+            <button type="submit" class="button-default">Apply Filters  </button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,104 @@
+{% load filters %}
+
+{% once "html/advanced-search/advanced-search-form" %}
+<style>{% include "html/advanced-search/advanced-search-form.css" %}</style>
+<script>{% include "html/advanced-search/select_menus.js" %}</script>
+<script>{% include "html/advanced-search/advanced-search-form.js" %}</script>
+<noscript>
+<style scoped>
+.advanced-search-wrapper{ display: block; }
+</style>
+</noscript>
+{% endonce %}
+
+<div class="advanced-search-wrapper">
+    <h2><a href="#"
+        id="adv-search-button"
+        aria-expanded="false">
+        <i class="icon icon-plus-square"></i> Advanced Search<span
+            class='icon accordion-down'></span>
+    </a></h2>
+
+    <div id="adv-search-div"
+        class="advanced-search-form-wrapper">
+        <form id="advanced-search-form"
+            action="{{options.path_info}}"
+            class='filterby'
+            name="search_form"
+            method="post">
+
+            <div class="advanced-search-toggle">
+                {% if options.display_options %}
+                {% with "advanced_search_form" as advanced_search_form %}
+                {% with facets|listdicts_to_dict:"title" as facets_dict %}
+                {% with facets_dict|get_dict_value:"Display Level" as facet %}
+                {% include "html/search/display-level.html" %}
+                {% endwith %}
+                {% endwith %}
+                {% endwith %}
+
+                <input type="hidden"
+                    name="dl"
+                    {% if not options.display_level %}
+                        value = "{{ options.display_options.default }}"
+                    {% else %}
+                        value = "{{ options.display_level }}"
+                    {% endif %}>
+                {% endif %}
+            </div>
+
+            <!--Keyword Search-->
+            <div class="advanced-search-form-row advanced-search-form-row-first">
+                {% include "html/advanced-search/keyword.html" %}
+            </div>
+
+            <div class="advanced-search-form-row">
+                {% include "html/advanced-search/add-field.html" %}
+            </div>
+
+            {% with facet_trail|listdicts_to_dictlists:"field" as facet_trail_dict %}
+            {% for facet_field in "location partof subject language"|split_words %}
+            {% if search.site.form_facets|any_facet_field_starts_with:facet_field %}
+                <div class="advanced-search-form-row">
+                {% for form_facet in search.site.form_facets %}
+                    {% if form_facet.field|startswith:facet_field %}
+                    {% if form_facet.display_level and form_facet.display_level != options.display_level %}
+                        {# Do nothing because this field should only show on specific display_levels #}
+                    {% elif "single" == form_facet.select %}
+                        {% with options.include_facets|listdicts_to_dict:"field" as facets_label %}
+                        {% with form_facet.field as facet and form_facet.required as required %}
+                        {% with facet_trail_dict|get_first_value:facet|to_list:" OR " as trail_for_facet %}
+                        {% include "html/advanced-search/select.html" %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                    {% elif "multiple" == form_facet.select %}
+                        {% with options.include_facets|listdicts_to_dict:"field" as facets_label %}
+                        {% with form_facet.field as facet and form_facet.required as required %}
+                        {% with facet_trail_dict|get_first_value:facet|to_list:" OR " as trail_for_facet %}
+                        {% include "html/advanced-search/multiselect.html" %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                    {% endif %}
+                    {% endif %}
+                {% endfor %}
+                </div>
+            {% endif %}
+            {% endfor %}
+
+            {% include "html/advanced-search/date-range.html" %}
+
+            <!-- Submit -->
+            <div class="advanced-search-form-row advanced-search-form-row-no-label">
+                {% if "page" == options.display_level %}
+                    {% include "html/advanced-search/front-page-only.html" %}
+                {% endif %}
+                {% include "html/advanced-search/submit.html" %}
+            </div>
+
+        {% endwith %} {# facet_trail_dict #}
+        </form>
+    </div><!-- end id:tab_advanced_search -->
+</div>
+
